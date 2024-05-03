@@ -47,7 +47,7 @@ mysql -h db.daws78s.online -uroot -pExpenseApp@1 -e 'show databases;' &>>$LOGFIL
 if [ $? -ne 0 ]
 then 
     mysql_secure_installation --set-root-pass ExpenseApp@1 &>>$LOGFILE
-    VALIDATE $? "Setting up root password"
+    VALIDATE $? "MySql root password setup"
 else
     echo -e "MySql root password is already setup.. $Y SKIPPING $N"
 fi
