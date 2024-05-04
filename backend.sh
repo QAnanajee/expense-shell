@@ -11,6 +11,9 @@ G="\e[32m"
 N="\e[0m"
 Y="\e[33m"
 
+echo "Please enter DB password"
+read -s mysql_root_password
+
 VALIDATE() {
     if [ $1 -ne 0 ]
     then
@@ -49,19 +52,44 @@ else
 echo -e "Expense user already created...$Y SKIPPING $N"
 fi
 
-mkdir -p /app
+mkdir -p /app &>>LOGFILE
 VALIDATE $? "Creatomh app directory"
 
-curl -o /tmp/backend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip
+curl -o /tmp/backend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip &>>LOGFILE
 VALIDATE $? "Downloading backend code"
 
-cd /app
+cd /app 
 
-unzip /tmp/backend.zip
+unzip /tmp/backend.zip &>>LOGFILE
 VALIDATE $? "Unzip the backend code"
 
-npm install
+npm install &>>LOGFILE
 VALIDATE $? "Installing nodejs dependencies"
+
+cp /home/ec2-user/expense-shell/backend.service /etc/systemd/system/backend.service &>>LOGFILE
+VALIDATE $? "Copied backend service"
+
+systemctl daemon-reload &>>LOGFILE
+VALIDATE $? "Here, Daemon reloaded"
+
+systemctl start backend &>>LOGFILE
+VALIDATE $? "Starting backend service"
+
+systemctl enable backend &>>LOGFILE
+VALIDATE $? "Enabling backend service"
+
+dnf install mysql -y &>>LOGFILE
+VALIDATE $? "Installing MYSQL CLIENT"
+
+mysql -h db.bhuvankarri.online -uroot -p${mysql_root_password} < /app/schema/backend.sql &>>LOGFILE
+VALIDATE $? "Schema loading"
+
+systemctl restart backend &>>LOGFILE
+VALIDATE $? "Restarting backend"
+
+
+
+
 
 
 
